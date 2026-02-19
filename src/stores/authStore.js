@@ -25,6 +25,8 @@ export const useAuthStore = defineStore('auth', {
         try {
           const response = await api.me()
           this.user = response.user
+          // Update stored user with fresh data
+          localStorage.setItem('auth_user', JSON.stringify(response.user))
         } catch (error) {
           // Token is invalid, clear state
           this.clearAuth()
@@ -42,10 +44,17 @@ export const useAuthStore = defineStore('auth', {
         this.user = response.user
         this.isAuthenticated = true
 
-        // Persist if remember-me is checked
+        // Always persist session in localStorage
+        localStorage.setItem('auth_token', response.token)
+        localStorage.setItem('auth_user', JSON.stringify(response.user))
+
+        // If remember-me is checked, save email and remember preference
         if (remember) {
-          localStorage.setItem('auth_token', response.token)
-          localStorage.setItem('auth_user', JSON.stringify(response.user))
+          localStorage.setItem('remember_email', email)
+          localStorage.setItem('remember_me', 'true')
+        } else {
+          localStorage.removeItem('remember_email')
+          localStorage.removeItem('remember_me')
         }
 
         return response
@@ -73,6 +82,7 @@ export const useAuthStore = defineStore('auth', {
       this.isAuthenticated = false
       localStorage.removeItem('auth_token')
       localStorage.removeItem('auth_user')
+      // Don't clear remember_email and remember_me - keep those for next login
     }
   }
 })

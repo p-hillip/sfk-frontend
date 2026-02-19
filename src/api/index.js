@@ -12,4 +12,4 @@ if (API_MODE === 'http') {
   apiImplementation = await import('./mockFilesApi.js')
 }
 
-export const { search, suggest, login, logout, me } = apiImplementation
+export const { search, suggest, login, logout, me, uploadFile, deleteFile } = apiImplementation

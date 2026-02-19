@@ -140,18 +140,20 @@ export default {
   setup(props, { emit }) {
     const authStore = useAuthStore()
 
-    const email = ref('')
+    // Load remembered email and remember-me preference
+    const rememberedEmail = localStorage.getItem('remember_email') || ''
+    const rememberMe = localStorage.getItem('remember_me') === 'true'
+
+    const email = ref(rememberedEmail)
     const password = ref('')
-    const remember = ref(false)
+    const remember = ref(rememberMe)
     const loading = ref(false)
     const error = ref(null)
 
     const closeModal = () => {
       emit('close')
-      // Reset form
-      email.value = ''
+      // Reset password only (keep email and remember if they were saved)
       password.value = ''
-      remember.value = false
       error.value = null
     }
 

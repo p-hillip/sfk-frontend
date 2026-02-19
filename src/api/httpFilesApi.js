@@ -107,3 +107,77 @@ export async function me() {
     user: data.user
   }
 }
+
+// Upload file
+export async function uploadFile(file, title, category, metadataText, onProgress) {
+  const token = getAuthToken()
+  const formData = new FormData()
+  formData.append('file', file)
+  if (title) formData.append('title', title)
+  if (category) formData.append('category', category)
+  if (metadataText) formData.append('metadataText', metadataText)
+
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest()
+
+    xhr.upload.addEventListener('progress', (e) => {
+      if (e.lengthComputable && onProgress) {
+        const percentComplete = Math.round((e.loaded * 100) / e.total)
+        onProgress(percentComplete)
+      }
+    })
+
+    xhr.addEventListener('load', () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        try {
+          const response = JSON.parse(xhr.responseText)
+          resolve(response)
+        } catch (error) {
+          resolve({})
+        }
+      } else {
+        try {
+          const error = JSON.parse(xhr.responseText)
+          reject(new Error(error.message || `HTTP ${xhr.status}`))
+        } catch {
+          reject(new Error(`HTTP ${xhr.status}`))
+        }
+      }
+    })
+
+    xhr.addEventListener('error', () => {
+      reject(new Error('Network error'))
+    })
+
+    xhr.open('POST', `${API_BASE_URL}/api/files/upload`)
+    if (token) {
+      xhr.setRequestHeader('Authorization', `Bearer ${token}`)
+    }
+
+    xhr.send(formData)
+  })
+}
+
+// Delete file
+export async function deleteFile(fileId) {
+  const url = `${API_BASE_URL}/api/files/${fileId}`
+
+  const response = await fetch(url, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${getAuthToken()}`
+    }
+  })
+
+  if (!response.ok) {
+    if (response.status === 400) {
+      throw new Error('You do not have permission to delete this file')
+    } else if (response.status === 404) {
+      throw new Error('File not found')
+    } else {
+      throw new Error(`HTTP ${response.status}`)
+    }
+  }
+
+  // 204 No Content returns nothing
+}

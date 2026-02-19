@@ -110,13 +110,24 @@
             <td class="px-4 py-3 text-sm text-gray-600">{{ file.uploadedBy }}</td>
             <td class="px-4 py-3 text-sm text-gray-600">{{ formatSize(file.fileSize) }}</td>
             <td class="px-4 py-3 text-sm">
-              <a
-                :href="file.downloadUrl"
-                class="text-blue-600 hover:text-blue-800 font-medium"
-                download
-              >
-                Download
-              </a>
+              <div class="flex items-center space-x-3">
+                <a
+                  :href="file.downloadUrl"
+                  class="text-blue-600 hover:text-blue-800"
+                  download
+                  title="Download file"
+                >
+                  <ArrowDownTrayIcon class="h-5 w-5" />
+                </a>
+                <button
+                  v-if="canDeleteFile(file)"
+                  @click="handleDelete(file)"
+                  class="cursor-pointer text-red-600 hover:text-red-800"
+                  title="Delete file"
+                >
+                  <TrashIcon class="h-5 w-5" />
+                </button>
+              </div>
             </td>
           </tr>
         </tbody>
@@ -126,12 +137,20 @@
 </template>
 
 <script>
+import { TrashIcon, ArrowDownTrayIcon } from '@heroicons/vue/24/outline'
 import { useSearchStore } from '../stores/searchStore.js'
+import { useAuthStore } from '../stores/authStore.js'
+import * as api from '../api/index.js'
 
 export default {
   name: 'ResultsTable',
+  components: {
+    TrashIcon,
+    ArrowDownTrayIcon
+  },
   setup() {
     const searchStore = useSearchStore()
+    const authStore = useAuthStore()
 
     const formatDate = (dateString) => {
       const date = new Date(dateString)
@@ -150,10 +169,34 @@ export default {
       return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i]
     }
 
+    const canDeleteFile = (file) => {
+      // User must be logged in and own the file
+      // Use uploadedByUserId for ownership check (not uploadedBy which is the display name)
+      return authStore.isAuthenticated && authStore.user?.id === file.uploadedByUserId
+    }
+
+    const handleDelete = async (file) => {
+      // Confirm deletion
+      if (!confirm(`Are you sure you want to delete "${file.filename}"?`)) {
+        return
+      }
+
+      try {
+        await api.deleteFile(file.id)
+        // Refresh the search results
+        await searchStore.runSearch()
+      } catch (error) {
+        console.error('Delete failed:', error)
+        alert(`Failed to delete file: ${error.message}`)
+      }
+    }
+
     return {
       searchStore,
       formatDate,
-      formatSize
+      formatSize,
+      canDeleteFile,
+      handleDelete
     }
   }
 }
