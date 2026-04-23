@@ -108,7 +108,7 @@ test.describe('Search Functionality', () => {
     await loginButton.click()
 
     // Check that modal is visible
-    const modal = page.locator('h3:has-text("Login to SpringFileKeeper")')
+    const modal = page.locator('h3:has-text("Login to Phrontend ToolKit")')
     await expect(modal).toBeVisible()
   })
 })

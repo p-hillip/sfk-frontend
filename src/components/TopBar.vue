@@ -2,7 +2,7 @@
   <div class="bg-blue-600 text-white shadow-md">
     <div class="container mx-auto px-4 py-3 flex items-center justify-between">
       <div class="flex items-center">
-        <h1 class="text-2xl font-bold">SpringFileKeeper</h1>
+        <h1 class="text-2xl font-bold">Phrontend ToolKit</h1>
       </div>
 
       <div class="flex items-center space-x-4">

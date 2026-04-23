@@ -1,4 +1,4 @@
-# SpringFileKeeper Frontend
+# Phrontend ToolKit Frontend
 
 Vue 3 + Vite + Tailwind CSS file management application.
 
